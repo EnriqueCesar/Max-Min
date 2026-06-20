@@ -105,14 +105,23 @@ function recalcTab(tab){
 function calc(tab,item){
   const pedidos=Number($(cfg[tab].orders).value), maxFactor=factorPedidos[pedidos]||5, mode=$(cfg[tab].mode).value;
   const ideal=Number(item.uso||0), diario=ideal/7;
-  let min=diario, max=diario*maxFactor, pres=item.unidad||'Unidad';
+  let min=diario, max=diario*maxFactor, pres=item.unidad||'Unidad', unitMode=mode==='unidad';
   if(mode==='pickpack'){
     const f=Number(item.factor||1) || 1;
     min=Math.ceil(min/f); max=Math.ceil(max/f); pres=item.pickpack||item.unidad||'Pick Pack';
-  } else {min=Math.ceil(min); max=Math.ceil(max); pres=item.unidad||'Unidad';}
-  return {ideal,diario,min,max,pres:cleanPresentation(pres)};
+  } else {
+    min=round1(min); max=round1(max); pres=item.unidad||'Unidad';
+  }
+  return {ideal,diario,min,max,pres:cleanPresentation(pres),unitMode};
 }
-function cleanPresentation(p){return String(p||'Unidad').replace(/\s+/g,' ').trim().replace(/^PZA:\s*$/,'PZA').replace(/^PZA:\s*/,'PZA: ');}
+function cleanPresentation(p){
+  let s=String(p||'Unidad').replace(/\s+/g,' ').trim();
+  s=s.replace(/^CJA:\s*/i,'').replace(/^PAQ:\s*/i,'').replace(/^CHA:\s*/i,'').replace(/^ROL:\s*/i,'').replace(/^BTE:\s*/i,'').replace(/^BTL:\s*/i,'').replace(/^BOL:\s*/i,'').replace(/^LT:\s*/i,'').replace(/^GR:\s*/i,'').replace(/^ONZ:\s*/i,'').replace(/^LIB:\s*/i,'').replace(/^CM:\s*/i,'');
+  s=s.replace(/^PZA:\s*$/i,'PZA').replace(/^PZA:\s*/i,'PZA ');
+  return (s || 'Unidad').trim();
+}
+
+function round1(n){return Math.round((Number(n)||0)*10)/10}
 
 function addMax(){
   const item=findItem('maxmin',$('searchItemMax').value);
@@ -141,13 +150,13 @@ function renderAll(){renderMax();renderConsulta();renderAcomodo();updateSubtitle
 function renderMax(){
   const body=$('selectedBodyMax'); body.innerHTML='';
   if(!state.max.length) body.innerHTML='<tr><td colspan="6" class="empty-row">Agrega artículos para construir tu guía visual.</td></tr>';
-  state.max.forEach((item,i)=>{const c=calc('maxmin',item); body.insertAdjacentHTML('beforeend',`<tr><td class="num">${i+1}</td><td>${esc(item.art)}</td><td><b>${fmt(c.min)}</b></td><td><b>${fmt(c.max)}</b></td><td><span class="pill">${esc(c.pres)}</span></td><td class="no-print"><button class="del" onclick="removeMax(${i})">Quitar</button></td></tr>`)});
+  state.max.forEach((item,i)=>{const c=calc('maxmin',item); body.insertAdjacentHTML('beforeend',`<tr><td class="num">${i+1}</td><td>${esc(item.art)}</td><td><b>${fmtVal(c.min,c.unitMode)}</b></td><td><b>${fmtVal(c.max,c.unitMode)}</b></td><td><span class="pill">${esc(c.pres)}</span></td><td class="no-print"><button class="del" onclick="removeMax(${i})">Quitar</button></td></tr>`)});
   renderMarkers(state.max,'markerLayerMax','markerPosMax');
 }
 function renderConsulta(){
   const body=$('selectedBodyConsulta'); body.innerHTML='';
-  if(!state.consulta.length) body.innerHTML='<tr><td colspan="10" class="empty-row">Selecciona categoría y presiona “Agregar consulta”, o busca un artículo específico.</td></tr>';
-  state.consulta.forEach((item,i)=>{const c=calc('consulta',item); body.insertAdjacentHTML('beforeend',`<tr><td class="num">${i+1}</td><td>${esc(item.art)}</td><td>${esc(item.cat||'')}</td><td>${fmt(c.ideal)}</td><td>${fmt(c.diario)}</td><td><b>${fmt(c.min)}</b></td><td><b>${fmt(c.max)}</b></td><td><span class="pill">${esc(cleanPresentation(item.unidad||'Unidad'))}</span></td><td><span class="pill">${esc(cleanPresentation(item.pickpack||'Pick Pack'))}</span></td><td class="no-print"><button class="del" onclick="removeConsulta(${i})">Quitar</button></td></tr>`)});
+  if(!state.consulta.length) body.innerHTML='<tr><td colspan="7" class="empty-row">Selecciona categoría y presiona “Agregar consulta”, o busca un artículo específico.</td></tr>';
+  state.consulta.forEach((item,i)=>{const c=calc('consulta',item); body.insertAdjacentHTML('beforeend',`<tr><td class="num">${i+1}</td><td>${esc(item.art)}</td><td>${fmtVal(c.ideal,true)}</td><td>${fmtVal(c.diario,true)}</td><td><b>${fmtVal(c.min,c.unitMode)}</b></td><td><b>${fmtVal(c.max,c.unitMode)}</b></td><td class="no-print"><button class="del" onclick="removeConsulta(${i})">Quitar</button></td></tr>`)});
 }
 function renderAcomodo(){
   const body=$('selectedBodyAcomodo'); body.innerHTML='';
@@ -177,7 +186,9 @@ function updateSubtitles(){
   const conWeeks=selectedWeeks('consulta').join(', ')||'Todas';
   $('maxSubtitle').textContent=`${$('maxStore').value} · Semanas ${maxWeeks}`;
   $('conSubtitle').textContent=`${$('conStore').value} · Semanas ${conWeeks}`;
-  $('acoSubtitle').textContent=`${$('acoStore').value} · ${$('acoTitle').value || 'Acomodo visual'}`;
+  const acoTitle=($('acoTitle').value||'Acomodo visual').trim();
+  $('acoTitlePrint').textContent=acoTitle.toUpperCase();
+  $('acoSubtitle').textContent=`${$('acoStore').value} · ${acoTitle}`;
 }
 function resetCurrent(){
   if(state.tab==='maxmin'){state.max=[];state.markerPosMax={};renderMax()}
@@ -192,6 +203,7 @@ function exportPDF(){
 }
 function uniq(a){return [...new Set(a.filter(v=>v!==undefined&&v!==null&&v!==''))].sort((x,y)=>String(x).localeCompare(String(y),'es',{numeric:true}))}
 function fmt(n){return Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:1})}
+function fmtVal(n,forceDecimal=false){return Number(n||0).toLocaleString('es-MX',forceDecimal?{minimumFractionDigits:1,maximumFractionDigits:1}:{maximumFractionDigits:1})}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function clean(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'')}
 window.addEventListener('DOMContentLoaded',init);

@@ -123,9 +123,11 @@ function calc(tab,item){
 function round1(n){return Math.round((Number(n)||0)*10)/10}
 function cleanPresentation(p){
   let x=String(p||'Unidad').replace(/\s+/g,' ').trim();
+  // Presentación limpia: quita el código inicial (CJA:, BTL:, PZA:) pero conserva la descripción operativa.
   x=x.replace(/^([A-ZÁÉÍÓÚÑ0-9]+):\s*/i,'');
-  x=x.replace(/^Pza\s+/i,'').replace(/^PZA$/i,'PZA');
-  return x || 'Unidad';
+  x=x.replace(/^Pza\s+/i,'').trim();
+  if(!x || /^PZA$/i.test(x)) return 'PZA';
+  return x;
 }
 
 function addMax(){

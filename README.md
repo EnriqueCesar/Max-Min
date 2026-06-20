@@ -1,10 +1,10 @@
-# Max & Min 2.1 Centro Norte
+# Max & Min 2.2 Centro Norte
 
-Versión limpia para GitHub Pages.
+Versión final limpia para GitHub Pages.
 
-- Una sola raíz del proyecto.
-- 3 pestañas: Max&Min, Consulta y Acomodo.
-- Semanas múltiples calculan promedio, no suma.
-- Uso mínimo = uso promedio / 7.
-- Uso máximo: 2 pedidos ×5, 3 ×4, 4 ×3, 5 ×2.
-- Exportación tamaño carta con margen visual amplio.
+- Consulta simplificada: No., Artículo, Uso Prom Sem, Uso Diario, Mínimo, Máximo.
+- Consulta por categoría carga todos los artículos al presionar Agregar consulta.
+- Acomodo con título editable reflejado en PDF.
+- Unidad conserva 1 decimal; Pick Pack redondea a enteros.
+- Catálogo Unidad/PickPack actualizado.
+- PDF Carta con margen de 20 mm.

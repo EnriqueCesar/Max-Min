@@ -15,24 +15,17 @@
   <main class="app">
     <section class="panel controls no-print">
       <div class="field"><label>Tienda</label><select id="storeFilter"></select></div>
-      <div class="field"><label>Campaña / Corte</label><input id="campaign" value="Enero-Jun" /></div>
-      <div class="field"><label>Semana (selección múltiple)</label><select id="weekFilter" multiple></select></div>
-      <div class="field"><label>Categoría</label><select id="categoryFilter"><option value="">Todas</option></select></div>
+      <div class="field hide-field"><label>Campaña / Corte</label><input id="campaign" value="Enero-Jun" /></div>
+      <div class="field"><label>Semana</label><select id="weekFilter" multiple></select></div>
+      <div class="field hide-field"><label>Categoría</label><select id="categoryFilter"><option value="">Todas</option></select></div>
       <div class="field"><label># pedidos a la semana</label><select id="ordersFilter"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-      <div class="field"><label>Uso en</label><select id="modeFilter"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
-    </section>
-
-    <section class="quick no-print">
-      <div><b>Uso ideal</b><span>Columna H por tienda y semana.</span></div>
-      <div><b>Uso mínimo</b><span>Uso ideal ÷ 7.</span></div>
-      <div><b>Uso máximo</b><span>2 pedidos=×5 · 3=×4 · 4=×3 · 5=×2.</span></div>
-      <div><b>Pick Pack</b><span>Cajas/cantidades mayores; si no aplica se mantiene unidad.</span></div>
+      <div class="field"><label>Formato</label><select id="modeFilter"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
     </section>
 
     <section id="letter" class="letter">
       <div class="sheet-head">
         <div class="badge">★</div>
-        <div><h2>MAX & MIN</h2><p id="subtitle">Tienda · Campaña · Semanas</p></div>
+        <div><h2>MAX & MIN</h2><p id="subtitle">Tienda · Semanas</p></div>
         <div class="print-meta"><b>STARBUCKS</b><span id="dateLabel"></span></div>
       </div>
 
@@ -43,13 +36,6 @@
         <div id="markerLayer"></div>
       </div>
 
-      <div class="summary-row">
-        <div><b>Uso ideal total</b><span id="totalIdeal">0</span></div>
-        <div><b>Uso diario</b><span id="totalDaily">0</span></div>
-        <div><b>Artículos seleccionados</b><span id="totalItems">0</span></div>
-        <div><b>Formato</b><span id="formatLabel">Unidad</span></div>
-      </div>
-
       <div class="selector no-print">
         <input id="searchItem" list="itemsList" placeholder="Buscar artículo para agregar..." />
         <datalist id="itemsList"></datalist>
@@ -57,7 +43,7 @@
       </div>
 
       <table class="items-table">
-        <thead><tr><th>No.</th><th>Producto</th><th>Categoría</th><th>Uso ideal</th><th>Uso mínimo</th><th>Uso máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
+        <thead><tr><th>No.</th><th>Artículo</th><th>Mínimo</th><th>Máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
         <tbody id="selectedBody"></tbody>
       </table>
       <p class="footnote">Planifica hoy · Produce mejor · Entrega la experiencia Starbucks</p>

@@ -11,3 +11,8 @@
   .pill{padding:2px 6px}.footnote{font-size:9px;margin-top:10px;letter-spacing:1.5px}
   @page{size:letter portrait;margin:0.28in}
 }
+
+/* Ajuste marcadores drag & drop */
+#markerLayer{position:absolute;inset:0;z-index:5;pointer-events:none}
+.marker{pointer-events:auto;touch-action:none;cursor:grab;z-index:10}
+.marker.dragging{cursor:grabbing;transform:scale(1.04)}

@@ -40,7 +40,56 @@ function renderSelected(){
 function removeItem(i){state.selected.splice(i,1);renderSelected()}
 window.removeItem=removeItem;
 function renderMarkers(){const layer=$('markerLayer');layer.innerHTML='';state.selected.forEach((it,i)=>{const n=i+1;const pos=state.markerPos[n]||{x:8+(i%6)*14,y:10+Math.floor(i/6)*16};const el=document.createElement('div');el.className='marker';el.textContent=n;el.style.left=pos.x+'%';el.style.top=pos.y+'%';drag(el,n);layer.appendChild(el);});}
-function drag(el,n){let on=false,dx=0,dy=0;el.addEventListener('pointerdown',e=>{on=true;el.setPointerCapture(e.pointerId);dx=e.offsetX;dy=e.offsetY});el.addEventListener('pointermove',e=>{if(!on)return;const rect=$('markerLayer').getBoundingClientRect();let x=(e.clientX-rect.left-dx)/rect.width*100;let y=(e.clientY-rect.top-dy)/rect.height*100;x=Math.max(0,Math.min(94,x));y=Math.max(0,Math.min(92,y));state.markerPos[n]={x,y};el.style.left=x+'%';el.style.top=y+'%';});el.addEventListener('pointerup',()=>on=false);}
+function drag(el,n){
+  // Arrastre real sobre la foto: funciona con mouse, touch y pluma.
+  // Guarda la ubicación en porcentaje para que se conserve al imprimir/exportar PDF.
+  let dragging=false;
+  let shiftX=0;
+  let shiftY=0;
+
+  const moveTo=(clientX,clientY)=>{
+    const layer=$('markerLayer');
+    const rect=layer.getBoundingClientRect();
+    const markerW=el.offsetWidth||54;
+    const markerH=el.offsetHeight||42;
+    let x=((clientX-rect.left-shiftX)/rect.width)*100;
+    let y=((clientY-rect.top-shiftY)/rect.height)*100;
+    const maxX=((rect.width-markerW)/rect.width)*100;
+    const maxY=((rect.height-markerH)/rect.height)*100;
+    x=Math.max(0,Math.min(maxX,x));
+    y=Math.max(0,Math.min(maxY,y));
+    state.markerPos[n]={x,y};
+    el.style.left=x+'%';
+    el.style.top=y+'%';
+  };
+
+  el.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    dragging=true;
+    const r=el.getBoundingClientRect();
+    shiftX=e.clientX-r.left;
+    shiftY=e.clientY-r.top;
+    el.classList.add('dragging');
+    try{el.setPointerCapture(e.pointerId)}catch(err){}
+  });
+
+  el.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    e.preventDefault();
+    moveTo(e.clientX,e.clientY);
+  });
+
+  const stop=e=>{
+    if(!dragging)return;
+    dragging=false;
+    el.classList.remove('dragging');
+    try{el.releasePointerCapture(e.pointerId)}catch(err){}
+  };
+  el.addEventListener('pointerup',stop);
+  el.addEventListener('pointercancel',stop);
+  el.addEventListener('lostpointercapture',()=>{dragging=false;el.classList.remove('dragging')});
+}
 function updateSubtitle(){const weeks=selectedWeeks().join(', ')||'Todas';$('subtitle').textContent=`${$('storeFilter').value} · Semanas ${weeks}`;}
 function fmt(n){return Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:1})}
 function esc(s){return String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}

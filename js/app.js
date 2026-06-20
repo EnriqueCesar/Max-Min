@@ -162,10 +162,10 @@ function renderMax(){
 }
 function renderConsulta(){
   const body=$('selectedBodyConsulta'); body.innerHTML='';
-  if(!state.consulta.length) body.innerHTML='<tr><td colspan="7" class="empty-row">Selecciona categoría y presiona “Agregar consulta”, o busca un artículo específico.</td></tr>';
+  if(!state.consulta.length) body.innerHTML='<tr><td colspan="6" class="empty-row">Selecciona categoría y presiona “Agregar consulta”, o busca un artículo específico.</td></tr>';
   state.consulta.forEach((item,i)=>{
     const c=calc('consulta',item);
-    body.insertAdjacentHTML('beforeend',`<tr><td class="num">${i+1}</td><td>${esc(item.art)}</td><td>${fmt(c.ideal)}</td><td>${fmt(c.diario)}</td><td><b>${fmtMinMax(c.min,c.valueMode)}</b></td><td><b>${fmtMinMax(c.max,c.valueMode)}</b></td><td class="no-print"><button class="del" onclick="removeConsulta(${i})">Quitar</button></td></tr>`);
+    body.insertAdjacentHTML('beforeend',`<tr><td class="num">${i+1}</td><td>${esc(item.art)}</td><td>${fmt(c.ideal)}</td><td><b>${fmtMinMax(c.min,c.valueMode)}</b></td><td><b>${fmtMinMax(c.max,c.valueMode)}</b></td><td class="no-print"><button class="del" onclick="removeConsulta(${i})">Quitar</button></td></tr>`);
   });
 }
 

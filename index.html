@@ -3,105 +3,133 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Max&Min_Tienda_Campaña</title>
+  <title>Max & Min 2.1</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <header class="topbar no-print">
-    <div class="brand"><div class="siren">★</div><div><h1>MAX & MIN 2.0</h1><p>Planeación · Consulta · Acomodo operativo</p></div></div>
-    <div class="actions"><button id="btnExport">Exportar Carta PDF</button><button id="btnReset">Limpiar vista</button></div>
+    <div class="brand">
+      <div class="siren">★</div>
+      <div>
+        <h1>MAX & MIN 2.1</h1>
+        <p>Herramienta operativa · Centro Norte</p>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="maxmin">Max&Min</button>
+      <button class="tab-btn" data-tab="consulta">Consulta</button>
+      <button class="tab-btn" data-tab="acomodo">Acomodo</button>
+    </nav>
+    <div class="actions">
+      <button id="btnExport">Exportar PDF</button>
+      <button id="btnReset">Limpiar pestaña</button>
+    </div>
   </header>
 
-  <nav class="tabs no-print">
-    <button class="tab active" data-tab="maxmin">Max&Min</button>
-    <button class="tab" data-tab="consulta">Consulta</button>
-    <button class="tab" data-tab="acomodo">Acomodo</button>
-  </nav>
-
   <main class="app">
-    <section class="panel controls no-print" id="filtersPanel">
-      <div class="field"><label>Tienda</label><select id="storeFilter"></select></div>
-      <div class="field"><label>Semana</label><select id="weekFilter" multiple></select></div>
-      <div class="field consulta-only"><label>Categoría</label><select id="categoryFilter"><option value="">Todas</option></select></div>
-      <div class="field data-only"><label># pedidos a la semana</label><select id="ordersFilter"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-      <div class="field data-only"><label>Formato</label><select id="modeFilter"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
-      <div class="field"><label>Campaña / Corte</label><input id="campaign" value="Enero-Jun" /></div>
+    <section id="tab-maxmin" class="tab-panel active">
+      <section class="panel controls no-print">
+        <div class="field field-store"><label>Tienda</label><select id="maxStore"></select></div>
+        <div class="field"><label>Semana</label><select id="maxWeeks" multiple></select></div>
+        <div class="field"><label># pedidos</label><select id="maxOrders"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="field"><label>Formato</label><select id="maxMode"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
+      </section>
+
+      <section id="letterMax" class="letter printable">
+        <div class="sheet-head">
+          <div class="badge">★</div>
+          <div><h2>MAX & MIN</h2><p id="maxSubtitle">Tienda · Semanas</p></div>
+          <div class="print-meta"><b>STARBUCKS</b><span id="maxDate"></span></div>
+        </div>
+        <div class="photo-tools no-print"><button class="ghost" id="clearPhotoMax">Borrar foto</button></div>
+        <div class="photo-wrap" id="photoWrapMax">
+          <input id="photoInputMax" class="no-print" type="file" accept="image/*" capture="environment" />
+          <label for="photoInputMax" id="photoLabelMax" class="photo-label no-print">Tomar / adjuntar foto</label>
+          <img id="rackPhotoMax" alt="Foto del área" />
+          <div id="markerLayerMax" class="marker-layer"></div>
+        </div>
+        <div class="selector no-print">
+          <input id="searchItemMax" list="maxItemsList" placeholder="Buscar artículo para agregar..." />
+          <datalist id="maxItemsList"></datalist>
+          <button id="btnAddMax">Agregar item</button>
+        </div>
+        <table class="items-table compact-table">
+          <thead><tr><th>No.</th><th>Artículo</th><th>Mínimo</th><th>Máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
+          <tbody id="selectedBodyMax"></tbody>
+        </table>
+        <p class="footnote">Planifica hoy · Produce mejor · Entrega la experiencia Starbucks</p>
+      </section>
     </section>
 
-    <section id="letter" class="letter view view-maxmin active">
-      <div class="sheet-head">
-        <div class="badge">★</div>
-        <div><h2 id="printTitle">MAX & MIN</h2><p id="subtitle">Tienda · Semanas</p></div>
-        <div class="print-meta"><b>STARBUCKS</b><span id="dateLabel"></span></div>
-      </div>
+    <section id="tab-consulta" class="tab-panel">
+      <section class="panel controls consulta-controls no-print">
+        <div class="field field-store"><label>Tienda</label><select id="conStore"></select></div>
+        <div class="field"><label>Semana</label><select id="conWeeks" multiple></select></div>
+        <div class="field"><label>Categoría</label><select id="conCategory"><option value="">Todas</option></select></div>
+        <div class="field"><label># pedidos</label><select id="conOrders"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="field"><label>Formato</label><select id="conMode"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
+      </section>
 
-      <div class="photo-wrap">
-        <input id="photoInput" class="no-print" type="file" accept="image/*" capture="environment" />
-        <label for="photoInput" id="photoLabel" class="photo-label no-print">📷 Tomar / adjuntar foto del rack, vitrina o área</label>
-        <img id="rackPhoto" alt="Foto del área" />
-        <div id="markerLayer"></div>
-      </div>
-
-      <div class="selector no-print data-selector">
-        <input id="searchItem" list="itemsList" placeholder="Buscar artículo para agregar..." />
-        <datalist id="itemsList"></datalist>
-        <button id="btnAdd">Agregar item</button>
-      </div>
-
-      <table class="items-table data-table">
-        <thead><tr><th>No.</th><th>Artículo</th><th>Mínimo</th><th>Máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
-        <tbody id="selectedBody"></tbody>
-      </table>
-      <p class="footnote">Planifica hoy · Produce mejor · Entrega la experiencia Starbucks</p>
+      <section id="letterConsulta" class="letter printable consulta-card">
+        <div class="sheet-head">
+          <div class="badge">★</div>
+          <div><h2>CONSULTA</h2><p id="conSubtitle">Tienda · Semanas</p></div>
+          <div class="print-meta"><b>STARBUCKS</b><span id="conDate"></span></div>
+        </div>
+        <div class="selector no-print consulta-selector">
+          <input id="searchItemConsulta" list="consultaItemsList" placeholder="Buscar artículo específico o deja vacío para agregar toda la categoría..." />
+          <datalist id="consultaItemsList"></datalist>
+          <button id="btnAddConsulta">Agregar consulta</button>
+          <button id="btnClearConsulta" class="soft">Borrar consulta</button>
+        </div>
+        <table class="items-table consulta-table">
+          <thead><tr><th>No.</th><th>Artículo</th><th>Categoría</th><th>Uso prom.</th><th>Uso diario</th><th>Mínimo</th><th>Máximo</th><th>Unidad</th><th>Pick Pack</th><th class="no-print">Acción</th></tr></thead>
+          <tbody id="selectedBodyConsulta"></tbody>
+        </table>
+        <p class="footnote">Consulta rápida · Valida listas · Decide con datos</p>
+      </section>
     </section>
 
-    <section id="consulta" class="letter view view-consulta">
-      <div class="sheet-head">
-        <div class="badge">★</div>
-        <div><h2>CONSULTA MAX & MIN</h2><p id="consultaSubtitle">Validación de listas</p></div>
-        <div class="print-meta"><b>STARBUCKS</b><span id="dateLabelConsulta"></span></div>
-      </div>
-      <div class="selector no-print">
-        <input id="consultaSearch" list="itemsListConsulta" placeholder="Buscar y seleccionar artículos..." />
-        <datalist id="itemsListConsulta"></datalist>
-        <button id="btnAddConsulta">Agregar a consulta</button>
-      </div>
-      <table class="items-table consulta-table">
-        <thead><tr><th>No.</th><th>Artículo</th><th>Categoría</th><th>Uso promedio</th><th>Uso diario</th><th>Mínimo</th><th>Máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
-        <tbody id="consultaBody"></tbody>
-      </table>
-      <p class="footnote">Consulta rápida · Valida por tienda, semana y categoría</p>
-    </section>
+    <section id="tab-acomodo" class="tab-panel">
+      <section class="panel controls no-print acomodo-controls">
+        <div class="field field-store"><label>Tienda</label><select id="acoStore"></select></div>
+        <div class="field"><label>Título</label><input id="acoTitle" value="Acomodo visual" /></div>
+      </section>
 
-    <section id="acomodo" class="letter view view-acomodo">
-      <div class="sheet-head">
-        <div class="badge">★</div>
-        <div><h2>ACOMODO</h2><p id="acomodoSubtitle">Foto + nombres editables</p></div>
-        <div class="print-meta"><b>STARBUCKS</b><span id="dateLabelAcomodo"></span></div>
-      </div>
-      <div class="photo-wrap">
-        <input id="acomodoPhotoInput" class="no-print" type="file" accept="image/*" capture="environment" />
-        <label for="acomodoPhotoInput" id="acomodoPhotoLabel" class="photo-label no-print">📷 Tomar / adjuntar foto de gaveta, rack o área</label>
-        <img id="acomodoPhoto" alt="Foto de acomodo" />
-        <div id="acomodoMarkerLayer"></div>
-      </div>
-      <div class="selector no-print acomodo-add">
-        <input id="acomodoName" placeholder="Nombre editable del artículo o espacio..." />
-        <input id="acomodoMin" placeholder="Mín opcional" />
-        <input id="acomodoMax" placeholder="Máx opcional" />
-        <button id="btnAddAcomodo">Agregar</button>
-      </div>
-      <table class="items-table acomodo-table">
-        <thead><tr><th>No.</th><th>Nombre editable</th><th>Mínimo</th><th>Máximo</th><th class="no-print">Acción</th></tr></thead>
-        <tbody id="acomodoBody"></tbody>
-      </table>
-      <p class="footnote">Orden visual · Disciplina operativa · Mejora continua</p>
+      <section id="letterAcomodo" class="letter printable">
+        <div class="sheet-head">
+          <div class="badge">★</div>
+          <div><h2>ACOMODO</h2><p id="acoSubtitle">Guía visual editable</p></div>
+          <div class="print-meta"><b>STARBUCKS</b><span id="acoDate"></span></div>
+        </div>
+        <div class="photo-tools no-print"><button class="ghost" id="clearPhotoAcomodo">Borrar foto</button></div>
+        <div class="photo-wrap" id="photoWrapAcomodo">
+          <input id="photoInputAcomodo" class="no-print" type="file" accept="image/*" capture="environment" />
+          <label for="photoInputAcomodo" id="photoLabelAcomodo" class="photo-label no-print">Tomar / adjuntar foto</label>
+          <img id="rackPhotoAcomodo" alt="Foto de acomodo" />
+          <div id="markerLayerAcomodo" class="marker-layer"></div>
+        </div>
+        <div class="acomodo-add no-print">
+          <input id="acomodoName" placeholder="Nombre editable del artículo / espacio" />
+          <input id="acomodoMin" placeholder="Mín opcional" />
+          <input id="acomodoMax" placeholder="Máx opcional" />
+          <button id="btnAddAcomodo">Agregar</button>
+        </div>
+        <table class="items-table compact-table acomodo-table">
+          <thead><tr><th>No.</th><th>Artículo / Espacio</th><th>Mínimo</th><th>Máximo</th><th class="no-print">Acción</th></tr></thead>
+          <tbody id="selectedBodyAcomodo"></tbody>
+        </table>
+        <p class="footnote">Orden visual · Disciplina operativa · Mejora continua</p>
+      </section>
     </section>
   </main>
 
   <script src="js/data_part_01.js"></script>
   <script src="js/data_part_02.js"></script>
   <script src="js/data_part_03.js"></script>
+  <script src="js/data_part_04.js"></script>
+  <script src="js/data_part_05.js"></script>
+  <script src="js/data_part_06.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

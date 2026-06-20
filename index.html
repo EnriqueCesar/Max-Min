@@ -8,24 +8,30 @@
 </head>
 <body>
   <header class="topbar no-print">
-    <div class="brand"><div class="siren">★</div><div><h1>MAX & MIN</h1><p>Planeación operativa por uso real · Centro Norte</p></div></div>
-    <div class="actions"><button id="btnExport">Exportar Carta PDF</button><button id="btnReset">Limpiar</button></div>
+    <div class="brand"><div class="siren">★</div><div><h1>MAX & MIN 2.0</h1><p>Planeación · Consulta · Acomodo operativo</p></div></div>
+    <div class="actions"><button id="btnExport">Exportar Carta PDF</button><button id="btnReset">Limpiar vista</button></div>
   </header>
 
+  <nav class="tabs no-print">
+    <button class="tab active" data-tab="maxmin">Max&Min</button>
+    <button class="tab" data-tab="consulta">Consulta</button>
+    <button class="tab" data-tab="acomodo">Acomodo</button>
+  </nav>
+
   <main class="app">
-    <section class="panel controls no-print">
+    <section class="panel controls no-print" id="filtersPanel">
       <div class="field"><label>Tienda</label><select id="storeFilter"></select></div>
-      <div class="field hide-field"><label>Campaña / Corte</label><input id="campaign" value="Enero-Jun" /></div>
       <div class="field"><label>Semana</label><select id="weekFilter" multiple></select></div>
-      <div class="field hide-field"><label>Categoría</label><select id="categoryFilter"><option value="">Todas</option></select></div>
-      <div class="field"><label># pedidos a la semana</label><select id="ordersFilter"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-      <div class="field"><label>Formato</label><select id="modeFilter"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
+      <div class="field consulta-only"><label>Categoría</label><select id="categoryFilter"><option value="">Todas</option></select></div>
+      <div class="field data-only"><label># pedidos a la semana</label><select id="ordersFilter"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+      <div class="field data-only"><label>Formato</label><select id="modeFilter"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
+      <div class="field"><label>Campaña / Corte</label><input id="campaign" value="Enero-Jun" /></div>
     </section>
 
-    <section id="letter" class="letter">
+    <section id="letter" class="letter view view-maxmin active">
       <div class="sheet-head">
         <div class="badge">★</div>
-        <div><h2>MAX & MIN</h2><p id="subtitle">Tienda · Semanas</p></div>
+        <div><h2 id="printTitle">MAX & MIN</h2><p id="subtitle">Tienda · Semanas</p></div>
         <div class="print-meta"><b>STARBUCKS</b><span id="dateLabel"></span></div>
       </div>
 
@@ -36,17 +42,60 @@
         <div id="markerLayer"></div>
       </div>
 
-      <div class="selector no-print">
+      <div class="selector no-print data-selector">
         <input id="searchItem" list="itemsList" placeholder="Buscar artículo para agregar..." />
         <datalist id="itemsList"></datalist>
         <button id="btnAdd">Agregar item</button>
       </div>
 
-      <table class="items-table">
+      <table class="items-table data-table">
         <thead><tr><th>No.</th><th>Artículo</th><th>Mínimo</th><th>Máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
         <tbody id="selectedBody"></tbody>
       </table>
       <p class="footnote">Planifica hoy · Produce mejor · Entrega la experiencia Starbucks</p>
+    </section>
+
+    <section id="consulta" class="letter view view-consulta">
+      <div class="sheet-head">
+        <div class="badge">★</div>
+        <div><h2>CONSULTA MAX & MIN</h2><p id="consultaSubtitle">Validación de listas</p></div>
+        <div class="print-meta"><b>STARBUCKS</b><span id="dateLabelConsulta"></span></div>
+      </div>
+      <div class="selector no-print">
+        <input id="consultaSearch" list="itemsListConsulta" placeholder="Buscar y seleccionar artículos..." />
+        <datalist id="itemsListConsulta"></datalist>
+        <button id="btnAddConsulta">Agregar a consulta</button>
+      </div>
+      <table class="items-table consulta-table">
+        <thead><tr><th>No.</th><th>Artículo</th><th>Categoría</th><th>Uso promedio</th><th>Uso diario</th><th>Mínimo</th><th>Máximo</th><th>Presentación</th><th class="no-print">Acción</th></tr></thead>
+        <tbody id="consultaBody"></tbody>
+      </table>
+      <p class="footnote">Consulta rápida · Valida por tienda, semana y categoría</p>
+    </section>
+
+    <section id="acomodo" class="letter view view-acomodo">
+      <div class="sheet-head">
+        <div class="badge">★</div>
+        <div><h2>ACOMODO</h2><p id="acomodoSubtitle">Foto + nombres editables</p></div>
+        <div class="print-meta"><b>STARBUCKS</b><span id="dateLabelAcomodo"></span></div>
+      </div>
+      <div class="photo-wrap">
+        <input id="acomodoPhotoInput" class="no-print" type="file" accept="image/*" capture="environment" />
+        <label for="acomodoPhotoInput" id="acomodoPhotoLabel" class="photo-label no-print">📷 Tomar / adjuntar foto de gaveta, rack o área</label>
+        <img id="acomodoPhoto" alt="Foto de acomodo" />
+        <div id="acomodoMarkerLayer"></div>
+      </div>
+      <div class="selector no-print acomodo-add">
+        <input id="acomodoName" placeholder="Nombre editable del artículo o espacio..." />
+        <input id="acomodoMin" placeholder="Mín opcional" />
+        <input id="acomodoMax" placeholder="Máx opcional" />
+        <button id="btnAddAcomodo">Agregar</button>
+      </div>
+      <table class="items-table acomodo-table">
+        <thead><tr><th>No.</th><th>Nombre editable</th><th>Mínimo</th><th>Máximo</th><th class="no-print">Acción</th></tr></thead>
+        <tbody id="acomodoBody"></tbody>
+      </table>
+      <p class="footnote">Orden visual · Disciplina operativa · Mejora continua</p>
     </section>
   </main>
 

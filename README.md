@@ -35,3 +35,8 @@ Abre la URL → Compartir → **Agregar a pantalla de inicio**.
 - Funciona como PWA con manifest y service worker.
 - Los archivos de data están divididos para GitHub Web.
 - Después de actualizar, usar Ctrl + Shift + R o abrir en incógnito para evitar caché.
+
+
+## PWA 10/10
+
+Assets conectados en `icons/`, manifest único `manifest.webmanifest`, splash/hero enlazados y `sw.js` con caché offline.

@@ -38,6 +38,9 @@ function bind(){
   $('btnAddAcomodo').addEventListener('click',addAcomodo);
   $('acomodoName').addEventListener('keydown',e=>{if(e.key==='Enter')addAcomodo()});
   bindPhoto('Max'); bindPhoto('Acomodo');
+  window.addEventListener('resize',fitAllPhotoStages);
+  window.addEventListener('beforeprint',fitAllPhotoStages);
+  window.addEventListener('afterprint',fitAllPhotoStages);
 }
 
 function setTab(tab){
@@ -48,9 +51,39 @@ function setTab(tab){
 }
 
 function bindPhoto(s){
-  const input=$('photoInput'+s), img=$('rackPhoto'+s), label=$('photoLabel'+s), clear=$('clearPhoto'+s);
-  input.addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return; img.src=URL.createObjectURL(f); img.style.display='block'; label.style.display='none';});
-  clear.addEventListener('click',()=>{input.value=''; img.removeAttribute('src'); img.style.display='none'; label.style.display='block';});
+  const input=$('photoInput'+s), img=$('rackPhoto'+s), label=$('photoLabel'+s), clear=$('clearPhoto'+s), stage=$('photoStage'+s);
+  input.addEventListener('change',e=>{
+    const f=e.target.files[0]; if(!f)return;
+    img.onload=()=>{ label.style.display='none'; stage.style.display='block'; fitPhotoStage(s); };
+    img.src=URL.createObjectURL(f);
+  });
+  clear.addEventListener('click',()=>{
+    input.value='';
+    img.removeAttribute('src');
+    stage.style.display='none';
+    stage.style.width='';
+    stage.style.height='';
+    label.style.display='block';
+  });
+}
+
+function fitPhotoStage(s){
+  const wrap=$('photoWrap'+s), stage=$('photoStage'+s), img=$('rackPhoto'+s);
+  if(!wrap||!stage||!img||!img.naturalWidth||!img.naturalHeight)return;
+  const wr=wrap.clientWidth, wh=wrap.clientHeight;
+  if(!wr||!wh)return;
+  const imgRatio=img.naturalWidth/img.naturalHeight;
+  const wrapRatio=wr/wh;
+  let w,h;
+  if(wrapRatio>imgRatio){ h=wh; w=h*imgRatio; }
+  else { w=wr; h=w/imgRatio; }
+  stage.style.width=w+'px';
+  stage.style.height=h+'px';
+  stage.style.display='block';
+}
+
+function fitAllPhotoStages(){
+  ['Max','Acomodo'].forEach(fitPhotoStage);
 }
 
 function refreshAllFilters(){refreshTab('maxmin'); refreshTab('consulta'); updateSubtitles();}

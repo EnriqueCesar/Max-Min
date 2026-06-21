@@ -38,52 +38,53 @@ function bind(){
   $('btnAddAcomodo').addEventListener('click',addAcomodo);
   $('acomodoName').addEventListener('keydown',e=>{if(e.key==='Enter')addAcomodo()});
   bindPhoto('Max'); bindPhoto('Acomodo');
-  window.addEventListener('resize',fitAllPhotoStages);
-  window.addEventListener('beforeprint',fitAllPhotoStages);
-  window.addEventListener('afterprint',fitAllPhotoStages);
 }
 
 function setTab(tab){
   state.tab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
-  refreshTab(tab); updateSubtitles();
+  refreshTab(tab); updateSubtitles(); requestAnimationFrame(alignAllMarkerLayers);
 }
 
 function bindPhoto(s){
-  const input=$('photoInput'+s), img=$('rackPhoto'+s), label=$('photoLabel'+s), clear=$('clearPhoto'+s), stage=$('photoStage'+s);
+  const input=$('photoInput'+s), img=$('rackPhoto'+s), label=$('photoLabel'+s), clear=$('clearPhoto'+s);
   input.addEventListener('change',e=>{
     const f=e.target.files[0]; if(!f)return;
-    img.onload=()=>{ label.style.display='none'; stage.style.display='block'; fitPhotoStage(s); };
+    img.onload=()=>{img.style.display='block'; label.style.display='none'; alignMarkerLayer(s);};
     img.src=URL.createObjectURL(f);
   });
   clear.addEventListener('click',()=>{
-    input.value='';
-    img.removeAttribute('src');
-    stage.style.display='none';
-    stage.style.width='';
-    stage.style.height='';
-    label.style.display='block';
+    input.value=''; img.removeAttribute('src'); img.style.display='none'; label.style.display='block';
+    resetMarkerLayer(s);
   });
 }
 
-function fitPhotoStage(s){
-  const wrap=$('photoWrap'+s), stage=$('photoStage'+s), img=$('rackPhoto'+s);
-  if(!wrap||!stage||!img||!img.naturalWidth||!img.naturalHeight)return;
-  const wr=wrap.clientWidth, wh=wrap.clientHeight;
-  if(!wr||!wh)return;
-  const imgRatio=img.naturalWidth/img.naturalHeight;
-  const wrapRatio=wr/wh;
-  let w,h;
-  if(wrapRatio>imgRatio){ h=wh; w=h*imgRatio; }
-  else { w=wr; h=w/imgRatio; }
-  stage.style.width=w+'px';
-  stage.style.height=h+'px';
-  stage.style.display='block';
+function imageContentBox(wrap,img){
+  const w=wrap.clientWidth, h=wrap.clientHeight;
+  if(!w||!h||!img.naturalWidth||!img.naturalHeight||img.style.display==='none') return {left:0,top:0,width:w,height:h};
+  const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
+  const width=img.naturalWidth*scale, height=img.naturalHeight*scale;
+  return {left:(w-width)/2, top:(h-height)/2, width, height};
 }
-
-function fitAllPhotoStages(){
-  ['Max','Acomodo'].forEach(fitPhotoStage);
+function alignMarkerLayer(s){
+  const wrap=$('photoWrap'+s), img=$('rackPhoto'+s), layer=$('markerLayer'+s);
+  if(!wrap||!img||!layer)return;
+  const box=imageContentBox(wrap,img);
+  layer.style.left=box.left+'px'; layer.style.top=box.top+'px'; layer.style.width=box.width+'px'; layer.style.height=box.height+'px';
+  layer.style.right='auto'; layer.style.bottom='auto';
+}
+function resetMarkerLayer(s){
+  const layer=$('markerLayer'+s); if(!layer)return;
+  layer.style.left='0'; layer.style.top='0'; layer.style.width='100%'; layer.style.height='100%'; layer.style.right='0'; layer.style.bottom='0';
+}
+function alignAllMarkerLayers(){alignMarkerLayer('Max'); alignMarkerLayer('Acomodo');}
+window.addEventListener('resize',()=>requestAnimationFrame(alignAllMarkerLayers));
+window.addEventListener('beforeprint',()=>{alignAllMarkerLayers(); setTimeout(alignAllMarkerLayers,80);});
+if(window.matchMedia){
+  const mq=window.matchMedia('print');
+  const handler=()=>{requestAnimationFrame(alignAllMarkerLayers); setTimeout(alignAllMarkerLayers,80)};
+  if(mq.addEventListener)mq.addEventListener('change',handler); else if(mq.addListener)mq.addListener(handler);
 }
 
 function refreshAllFilters(){refreshTab('maxmin'); refreshTab('consulta'); updateSubtitles();}
@@ -215,6 +216,8 @@ window.removeMax=removeMax; window.removeConsulta=removeConsulta; window.removeA
 function renderMarkers(items,layerId,posKey){
   const layer=$(layerId); layer.innerHTML='';
   items.forEach((it,i)=>{const n=i+1; const pos=state[posKey][n]||{x:7+(i%6)*13,y:9+Math.floor(i/6)*14}; const el=document.createElement('div'); el.className='marker'; el.textContent=n; el.style.left=pos.x+'%'; el.style.top=pos.y+'%'; drag(el,n,layerId,posKey); layer.appendChild(el);});
+  if(layerId==='markerLayerMax') requestAnimationFrame(()=>alignMarkerLayer('Max'));
+  if(layerId==='markerLayerAcomodo') requestAnimationFrame(()=>alignMarkerLayer('Acomodo'));
 }
 function drag(el,n,layerId,posKey){
   let dragging=false,shiftX=0,shiftY=0;
@@ -249,4 +252,4 @@ function fmtUnit(n){return Number(n||0).toLocaleString('es-MX',{minimumFractionD
 function fmtMinMax(n,mode){return mode==='unidad'?fmtUnit(n):Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function clean(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'')}
-window.addEventListener('DOMContentLoaded',init);
+window.addEventListener('DOMContentLoaded',()=>{init(); requestAnimationFrame(alignAllMarkerLayers);});

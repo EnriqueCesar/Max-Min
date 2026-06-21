@@ -54,6 +54,8 @@
     display:block!important;
   }
   .photo-wrap.has-print-composite > img:not(.print-composite),
+  .photo-wrap.has-print-composite #rackPhotoMax,
+  .photo-wrap.has-print-composite #rackPhotoAcomodo,
   .photo-wrap.has-print-composite .marker-layer{display:none!important}
   .photo-wrap.has-print-composite > img.print-composite{
     display:block!important;

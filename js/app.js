@@ -95,8 +95,16 @@ function preparePrintComposites(){
   makePrintComposite('Acomodo','markerPosAcomodo',state.acomodo);
 }
 function cleanupPrintComposites(){
+  // Restaurar la foto original después de imprimir/exportar.
+  document.querySelectorAll('.photo-wrap.has-print-composite').forEach(wrap=>{
+    const original=wrap.querySelector('img:not(.print-composite)');
+    if(original && original.dataset.prevDisplay!==undefined){
+      original.style.display=original.dataset.prevDisplay||'block';
+      delete original.dataset.prevDisplay;
+    }
+    wrap.classList.remove('has-print-composite');
+  });
   document.querySelectorAll('.print-composite').forEach(el=>el.remove());
-  document.querySelectorAll('.photo-wrap.has-print-composite').forEach(el=>el.classList.remove('has-print-composite'));
 }
 function makePrintComposite(s,posKey,items){
   const wrap=$('photoWrap'+s), img=$('rackPhoto'+s);
@@ -122,6 +130,11 @@ function makePrintComposite(s,posKey,items){
   out.className='print-composite';
   out.alt='Foto con marcadores';
   out.src=canvas.toDataURL('image/jpeg',0.92);
+  // En algunos navegadores móviles la vista de impresión conserva la imagen original
+  // aunque el CSS indique ocultarla. La ocultamos también por JS para evitar duplicidad.
+  img.dataset.prevDisplay=img.style.display || 'block';
+  img.style.display='none';
+  out.style.display='block';
   wrap.appendChild(out);
   wrap.classList.add('has-print-composite');
 }

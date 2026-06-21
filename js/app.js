@@ -51,11 +51,11 @@ function bindPhoto(s){
   const input=$('photoInput'+s), img=$('rackPhoto'+s), label=$('photoLabel'+s), clear=$('clearPhoto'+s);
   input.addEventListener('change',e=>{
     const f=e.target.files[0]; if(!f)return;
-    img.onload=()=>{img.style.display='block'; label.style.display='none'; alignMarkerLayer(s); setTimeout(()=>alignMarkerLayer(s),120);};
+    img.onload=()=>{img.style.display='block'; label.style.display='none'; $('photoWrap'+s)?.classList.add('has-photo'); alignMarkerLayer(s); setTimeout(()=>alignMarkerLayer(s),120);};
     img.src=URL.createObjectURL(f);
   });
   clear.addEventListener('click',()=>{
-    input.value=''; img.removeAttribute('src'); img.style.display='none'; label.style.display='block';
+    input.value=''; img.removeAttribute('src'); img.style.display='none'; label.style.display='block'; $('photoWrap'+s)?.classList.remove('has-photo');
     resetMarkerLayer(s);
   });
 }

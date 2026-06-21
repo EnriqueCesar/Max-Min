@@ -86,12 +86,77 @@ function resetMarkerLayer(s){
   const layer=$('markerLayer'+s); if(!layer)return;
   layer.style.left='0'; layer.style.top='0'; layer.style.width='100%'; layer.style.height='100%'; layer.style.right='0'; layer.style.bottom='0';
 }
+
+
+// Crea una imagen compuesta SOLO para impresión: foto completa + marcadores.
+// Esto evita que Chrome cambie el tamaño del layer al exportar y respeta la ubicación colocada en pantalla.
+function preparePrintComposites(){
+  makePrintComposite('Max','markerPosMax',state.max);
+  makePrintComposite('Acomodo','markerPosAcomodo',state.acomodo);
+}
+function cleanupPrintComposites(){
+  document.querySelectorAll('.print-composite').forEach(el=>el.remove());
+  document.querySelectorAll('.photo-wrap.has-print-composite').forEach(el=>el.classList.remove('has-print-composite'));
+}
+function makePrintComposite(s,posKey,items){
+  const wrap=$('photoWrap'+s), img=$('rackPhoto'+s);
+  if(!wrap||!img||!img.src||img.style.display==='none'||!img.naturalWidth||!img.naturalHeight)return;
+  let old=wrap.querySelector('img.print-composite');
+  if(old)old.remove();
+  const maxSide=1800;
+  const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+  const cw=Math.max(1,Math.round(img.naturalWidth*scale));
+  const ch=Math.max(1,Math.round(img.naturalHeight*scale));
+  const canvas=document.createElement('canvas');
+  canvas.width=cw; canvas.height=ch;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(img,0,0,cw,ch);
+  const positions=state[posKey]||{};
+  const count=items.length;
+  for(let i=0;i<count;i++){
+    const n=i+1;
+    const pos=positions[n]||{x:7+(i%6)*13,y:9+Math.floor(i/6)*14};
+    drawMarker(ctx,cw,ch,n,pos.x,pos.y);
+  }
+  const out=document.createElement('img');
+  out.className='print-composite';
+  out.alt='Foto con marcadores';
+  out.src=canvas.toDataURL('image/jpeg',0.92);
+  wrap.appendChild(out);
+  wrap.classList.add('has-print-composite');
+}
+function drawMarker(ctx,cw,ch,n,xPct,yPct){
+  const mw=Math.max(44,Math.min(70,cw*0.065));
+  const mh=mw*0.72;
+  let x=(Number(xPct)||0)/100*cw;
+  let y=(Number(yPct)||0)/100*ch;
+  x=Math.max(0,Math.min(cw-mw,x));
+  y=Math.max(0,Math.min(ch-mh,y));
+  const r=mh/2;
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;
+  roundRect(ctx,x,y,mw,mh,r);
+  ctx.fillStyle='white';ctx.fill();
+  ctx.shadowColor='transparent';ctx.lineWidth=Math.max(4,cw*0.004);ctx.strokeStyle='#45a538';ctx.stroke();
+  ctx.fillStyle='#000';ctx.font=`900 ${Math.round(mh*0.56)}px Arial, Helvetica, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(n),x+mw/2,y+mh/2+1);
+  ctx.restore();
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
 function alignAllMarkerLayers(){alignMarkerLayer('Max'); alignMarkerLayer('Acomodo');}
 window.addEventListener('resize',()=>requestAnimationFrame(alignAllMarkerLayers));
-window.addEventListener('beforeprint',()=>{alignAllMarkerLayers(); setTimeout(alignAllMarkerLayers,80); setTimeout(alignAllMarkerLayers,250);});
+function beforePrintPrep(){
+  alignAllMarkerLayers();
+  preparePrintComposites();
+  setTimeout(()=>{alignAllMarkerLayers();preparePrintComposites();},80);
+  setTimeout(()=>{alignAllMarkerLayers();preparePrintComposites();},250);
+}
+window.addEventListener('beforeprint',beforePrintPrep);
+window.addEventListener('afterprint',cleanupPrintComposites);
 if(window.matchMedia){
   const mq=window.matchMedia('print');
-  const handler=()=>{requestAnimationFrame(alignAllMarkerLayers); setTimeout(alignAllMarkerLayers,80); setTimeout(alignAllMarkerLayers,250)};
+  const handler=e=>{ if(e && e.matches){ beforePrintPrep(); } else { cleanupPrintComposites(); } };
   if(mq.addEventListener)mq.addEventListener('change',handler); else if(mq.addListener)mq.addListener(handler);
 }
 
@@ -252,7 +317,8 @@ function exportPDF(){
   const labels={maxmin:'MaxMin',consulta:'Consulta',acomodo:'Acomodo'};
   const store=state.tab==='consulta'?$('conStore').value:state.tab==='acomodo'?$('acoStore').value:$('maxStore').value;
   document.title=`${labels[state.tab]}_${clean(store)}`;
-  window.print();
+  beforePrintPrep();
+  setTimeout(()=>window.print(),120);
 }
 function uniq(a){return [...new Set(a.filter(v=>v!==undefined&&v!==null&&v!==''))].sort((x,y)=>String(x).localeCompare(String(y),'es',{numeric:true}))}
 function fmt(n){return Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:1})}

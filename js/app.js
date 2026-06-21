@@ -51,7 +51,7 @@ function bindPhoto(s){
   const input=$('photoInput'+s), img=$('rackPhoto'+s), label=$('photoLabel'+s), clear=$('clearPhoto'+s);
   input.addEventListener('change',e=>{
     const f=e.target.files[0]; if(!f)return;
-    img.onload=()=>{img.style.display='block'; label.style.display='none'; alignMarkerLayer(s);};
+    img.onload=()=>{img.style.display='block'; label.style.display='none'; alignMarkerLayer(s); setTimeout(()=>alignMarkerLayer(s),120);};
     img.src=URL.createObjectURL(f);
   });
   clear.addEventListener('click',()=>{
@@ -62,7 +62,15 @@ function bindPhoto(s){
 
 function imageContentBox(wrap,img){
   const w=wrap.clientWidth, h=wrap.clientHeight;
-  if(!w||!h||!img.naturalWidth||!img.naturalHeight||img.style.display==='none') return {left:0,top:0,width:w,height:h};
+  if(!w||!h||!img || !img.src || img.style.display==='none') return {left:0,top:0,width:w,height:h};
+  const wr=wrap.getBoundingClientRect();
+  const ir=img.getBoundingClientRect();
+  // Usar el rectángulo REAL renderizado de la imagen.
+  // Así los marcadores viven sobre la foto completa, no sobre el recuadro.
+  if(ir.width>0 && ir.height>0){
+    return {left:ir.left-wr.left, top:ir.top-wr.top, width:ir.width, height:ir.height};
+  }
+  if(!img.naturalWidth||!img.naturalHeight) return {left:0,top:0,width:w,height:h};
   const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
   const width=img.naturalWidth*scale, height=img.naturalHeight*scale;
   return {left:(w-width)/2, top:(h-height)/2, width, height};
@@ -80,10 +88,10 @@ function resetMarkerLayer(s){
 }
 function alignAllMarkerLayers(){alignMarkerLayer('Max'); alignMarkerLayer('Acomodo');}
 window.addEventListener('resize',()=>requestAnimationFrame(alignAllMarkerLayers));
-window.addEventListener('beforeprint',()=>{alignAllMarkerLayers(); setTimeout(alignAllMarkerLayers,80);});
+window.addEventListener('beforeprint',()=>{alignAllMarkerLayers(); setTimeout(alignAllMarkerLayers,80); setTimeout(alignAllMarkerLayers,250);});
 if(window.matchMedia){
   const mq=window.matchMedia('print');
-  const handler=()=>{requestAnimationFrame(alignAllMarkerLayers); setTimeout(alignAllMarkerLayers,80)};
+  const handler=()=>{requestAnimationFrame(alignAllMarkerLayers); setTimeout(alignAllMarkerLayers,80); setTimeout(alignAllMarkerLayers,250)};
   if(mq.addEventListener)mq.addEventListener('change',handler); else if(mq.addListener)mq.addListener(handler);
 }
 

@@ -4,6 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Máximos y Mínimos 2.0</title>
+  <meta name="theme-color" content="#006241" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Max&Min" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" href="icons/favicon-32.png" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -45,10 +52,8 @@
         <div class="photo-wrap" id="photoWrapMax">
           <input id="photoInputMax" class="no-print" type="file" accept="image/*" capture="environment" />
           <label for="photoInputMax" id="photoLabelMax" class="photo-label no-print">Tomar / adjuntar foto</label>
-          <div id="photoStageMax" class="photo-stage">
-            <img id="rackPhotoMax" alt="Foto del área" />
-            <div id="markerLayerMax" class="marker-layer"></div>
-          </div>
+          <img id="rackPhotoMax" alt="Foto del área" />
+          <div id="markerLayerMax" class="marker-layer"></div>
         </div>
         <div class="selector no-print">
           <input id="searchItemMax" list="maxItemsList" placeholder="Buscar artículo para agregar..." />
@@ -108,10 +113,8 @@
         <div class="photo-wrap" id="photoWrapAcomodo">
           <input id="photoInputAcomodo" class="no-print" type="file" accept="image/*" capture="environment" />
           <label for="photoInputAcomodo" id="photoLabelAcomodo" class="photo-label no-print">Tomar / adjuntar foto</label>
-          <div id="photoStageAcomodo" class="photo-stage">
-            <img id="rackPhotoAcomodo" alt="Foto de acomodo" />
-            <div id="markerLayerAcomodo" class="marker-layer"></div>
-          </div>
+          <img id="rackPhotoAcomodo" alt="Foto de acomodo" />
+          <div id="markerLayerAcomodo" class="marker-layer"></div>
         </div>
         <div class="acomodo-add no-print">
           <input id="acomodoName" placeholder="Nombre editable del artículo / espacio" />
@@ -135,5 +138,13 @@
   <script src="js/data_part_05.js"></script>
   <script src="js/data_part_06.js"></script>
   <script src="js/app.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "Máximos y Mínimos 2.0",
+  "short_name": "Max&Min",
+  "description": "Herramienta operativa para máximos, mínimos, consulta y acomodo visual.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4faf7",
+  "theme_color": "#006241",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

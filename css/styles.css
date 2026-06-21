@@ -81,3 +81,17 @@
   .consulta-card .items-table th,.consulta-card .items-table td{padding:3px 4px!important}
   .empty-row{padding:14px!important;font-size:9px!important}
 }
+
+/* PWA Premium: hero conectado como fondo sutil en el área de foto */
+.photo-wrap{
+  background:
+    linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.94)),
+    url('../icons/hero-maxmin.png') center/cover no-repeat;
+}
+.photo-wrap:has(img[style*="display: block"]),
+.photo-wrap.has-photo{
+  background:#fff;
+}
+@media print{
+  .photo-wrap{background:#fff!important;}
+}

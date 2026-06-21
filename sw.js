@@ -1,30 +1,29 @@
-const CACHE_NAME = 'maxmin-pwa-v10';
+const CACHE_NAME = 'maxmin-pwa-v11';
+
 const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./README.md",
-  "./css/styles.css",
-  "./icons/apple-touch-icon.png",
-  "./icons/favicon-32.png",
-  "./icons/hero-maxmin.png",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/splash-1920x1080.png",
-  "./js/app.js",
-  "./js/data_part_01.js",
-  "./js/data_part_02.js",
-  "./js/data_part_03.js",
-  "./js/data_part_04.js",
-  "./js/data_part_05.js",
-  "./js/data_part_06.js",
-  "./manifest.webmanifest",
-  "./sw.js"
+  './',
+  './index.html',
+  './css/styles.css',
+  './icons/apple-touch-icon.png',
+  './icons/favicon-32.png',
+  './icons/hero-maxmin.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/splash-1920x1080.png',
+  './js/app.js',
+  './js/data_part_01.js',
+  './js/data_part_02.js',
+  './js/data_part_03.js',
+  './js/data_part_04.js',
+  './js/data_part_05.js',
+  './js/data_part_06.js',
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      .then(cache => Promise.allSettled(APP_SHELL.map(url => cache.add(url))))
       .then(() => self.skipWaiting())
   );
 });
@@ -45,8 +44,8 @@ self.addEventListener('fetch', event => {
       if (cached) return cached;
 
       return fetch(event.request).then(response => {
-        const copy = response.clone();
-        if (response.ok && new URL(event.request.url).origin === self.location.origin) {
+        if (response && response.ok && new URL(event.request.url).origin === self.location.origin) {
+          const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         }
         return response;

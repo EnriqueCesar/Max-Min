@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Máximos y Mínimos 2.0</title>
+  <title>Max&Min 2.0</title>
   <meta name="theme-color" content="#006241" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Max&Min" />
+  <meta name="apple-mobile-web-app-title" content="Max&Min 2.0" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -19,9 +19,9 @@
 <body>
   <header class="topbar no-print">
     <div class="brand">
-      <div class="siren">★</div>
+      <div class="app-logo"><img src="icons/icon-192.png" alt="Max&Min 2.0" /></div>
       <div>
-        <h1>Máximos y Mínimos 3.0</h1>
+        <h1>Max&Min 2.0</h1>
         <p>Herramienta operativa · POS Sem 18–25</p>
       </div>
     </div>
@@ -39,7 +39,7 @@
   <main class="app">
     <section id="tab-maxmin" class="tab-panel active">
       <section class="panel controls no-print">
-        <div class="field field-store"><label>Tienda</label><select id="maxStore"></select></div>
+        <div class="field field-store"><label>Tienda / CeCo</label><select id="maxStore"></select></div>
         <div class="field"><label>Semana</label><select id="maxWeeks" multiple></select></div>
         <div class="field"><label># pedidos</label><select id="maxOrders"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
         <div class="field"><label>Formato</label><select id="maxMode"><option value="unidad">Unidad</option><option value="pickpack">Pick Pack</option></select></div>
@@ -74,7 +74,7 @@
 
     <section id="tab-consulta" class="tab-panel">
       <section class="panel controls consulta-controls no-print">
-        <div class="field field-store"><label>Tienda</label><select id="conStore"></select></div>
+        <div class="field field-store"><label>Tienda / CeCo</label><select id="conStore"></select></div>
         <div class="field"><label>Semana</label><select id="conWeeks" multiple></select></div>
         <div class="field"><label>Categoría</label><select id="conCategory"><option value="">Todas</option></select></div>
         <div class="field"><label># pedidos</label><select id="conOrders"><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
@@ -104,7 +104,7 @@
 
     <section id="tab-acomodo" class="tab-panel">
       <section class="panel controls no-print acomodo-controls">
-        <div class="field field-store"><label>Tienda</label><select id="acoStore"></select></div>
+        <div class="field field-store"><label>Tienda / CeCo</label><select id="acoStore"></select></div>
         <div class="field"><label>Título</label><input id="acoTitle" value="Acomodo visual" /></div>
       </section>
 

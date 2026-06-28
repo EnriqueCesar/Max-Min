@@ -13,8 +13,12 @@ const cfg={
 function init(){
   ['maxDate','conDate','acoDate'].forEach(id=>$(id).textContent=new Date().toLocaleDateString('es-MX'));
   buildDataIndex();
-  const stores=(window.MAXMIN_STORES||[]);
-  ['maxStore','conStore','acoStore'].forEach(id=>$(id).innerHTML=stores.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join(''));
+  const stores=sortStoresByCeCo(window.MAXMIN_STORES||[]);
+  window.MAXMIN_STORE_OPTIONS=stores;
+  ['maxStore','conStore','acoStore'].forEach(id=>{
+    $(id).innerHTML=stores.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    enhanceStoreSearch(id);
+  });
   const weeks=(window.MAXMIN_META&&Array.isArray(MAXMIN_META.weeks))?MAXMIN_META.weeks:uniq(Object.keys(window.MAXMIN_WEEK_ROWS||{}));
   ['maxWeeks','conWeeks'].forEach(id=>{
     $(id).innerHTML=weeks.map(w=>`<option value="${esc(w)}" selected>Semana ${esc(w)}</option>`).join('');
@@ -175,6 +179,72 @@ if(window.matchMedia){
   if(mq.addEventListener)mq.addEventListener('change',handler); else if(mq.addListener)mq.addListener(handler);
 }
 
+
+function parseCeCo(store){
+  const m=String(store||'').match(/^(\d{3,6})\s*[·\-–]?\s*/);
+  return m?Number(m[1]):999999;
+}
+function normalizeTxt(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+}
+function sortStoresByCeCo(stores){
+  return [...stores].sort((a,b)=>parseCeCo(a)-parseCeCo(b)||String(a).localeCompare(String(b),'es',{numeric:true}));
+}
+function enhanceStoreSearch(selectId){
+  const sel=$(selectId); if(!sel || sel.dataset.searchEnhanced)return; sel.dataset.searchEnhanced='1';
+  sel.classList.add('store-native-select');
+  const wrap=document.createElement('div'); wrap.className='store-search';
+  const input=document.createElement('input'); input.type='search'; input.className='store-search-input'; input.autocomplete='off'; input.placeholder='Escribe CeCo o nombre de tienda…';
+  const info=document.createElement('div'); info.className='store-search-info';
+  const list=document.createElement('div'); list.className='store-search-results'; list.setAttribute('role','listbox');
+  wrap.appendChild(input); wrap.appendChild(info); wrap.appendChild(list); sel.insertAdjacentElement('afterend',wrap);
+  const all=window.MAXMIN_STORE_OPTIONS||sortStoresByCeCo(window.MAXMIN_STORES||[]);
+  const setValue=(value,notify=true)=>{
+    if(!value)return;
+    sel.value=value; input.value=value; info.textContent=`Seleccionada: ${value}`; close();
+    if(notify) sel.dispatchEvent(new Event('change',{bubbles:true}));
+  };
+  const close=()=>{list.classList.remove('open'); list.innerHTML='';};
+  const render=()=>{
+    const q=normalizeTxt(input.value.trim());
+    const terms=q.split(/\s+/).filter(Boolean);
+    let matches=all.filter(store=>{
+      const n=normalizeTxt(store);
+      return !terms.length || terms.every(t=>n.includes(t));
+    });
+    matches=matches.slice(0,60);
+    list.innerHTML='';
+    if(!matches.length){list.innerHTML='<button type="button" class="store-result empty">Sin coincidencias</button>'; list.classList.add('open'); return;}
+    matches.forEach((store,i)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='store-result'+(store===sel.value?' active':'');
+      const ceco=String(store).match(/^(\d{3,6})/)?.[1]||'';
+      const name=String(store).replace(/^\d{3,6}\s*[·\-–]?\s*/,'');
+      b.innerHTML=`<strong>${esc(ceco)}</strong><span>${esc(name)}</span>`;
+      b.addEventListener('mousedown',e=>{e.preventDefault(); setValue(store,true);});
+      list.appendChild(b);
+      if(i===0) b.dataset.first='1';
+    });
+    list.classList.add('open');
+  };
+  input.addEventListener('focus',render);
+  input.addEventListener('input',render);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const first=list.querySelector('.store-result:not(.empty)');
+      if(first){
+        const idx=[...list.children].indexOf(first);
+        const q=normalizeTxt(input.value.trim());
+        const terms=q.split(/\s+/).filter(Boolean);
+        const match=all.filter(store=>{const n=normalizeTxt(store); return !terms.length || terms.every(t=>n.includes(t));})[idx];
+        if(match)setValue(match,true);
+      }
+    } else if(e.key==='Escape') close();
+  });
+  document.addEventListener('click',e=>{if(!wrap.contains(e.target))close();});
+  sel.addEventListener('change',()=>{input.value=sel.value; info.textContent=`Seleccionada: ${sel.value}`;});
+  setValue(sel.value || all[0], false);
+}
 
 function buildDataIndex(){
   window.MAXMIN_STORE_INDEX=new Map((window.MAXMIN_STORES||[]).map((s,i)=>[s,i]));
@@ -395,4 +465,4 @@ function fmtUnit(n){return Number(n||0).toLocaleString('es-MX',{minimumFractionD
 function fmtMinMax(n,mode){return mode==='unidad'?fmtUnit(n):Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function clean(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'')}
-window.addEventListener('DOMContentLoaded',()=>{init(); console.info('Max&Min 3.0 validado', window.MAXMIN_META?.counts); requestAnimationFrame(alignAllMarkerLayers);});
+window.addEventListener('DOMContentLoaded',()=>{init(); console.info('Max&Min 2.0 validado', window.MAXMIN_META?.counts); requestAnimationFrame(alignAllMarkerLayers);});

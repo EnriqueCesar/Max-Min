@@ -1,4 +1,4 @@
-# Max&Min 3.0 POS Sem 18–25
+# Max&Min 2.0 POS Sem 18–25
 
 Versión optimizada para GitHub Pages.
 

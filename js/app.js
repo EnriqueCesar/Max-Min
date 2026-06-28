@@ -1,6 +1,6 @@
 const COL={dm:0,anio:1,sem:2,ceco:3,tienda:4,cat:5,art:6,uso:7,unidad:8,pickpack:9,factor:10};
 const factorPedidos={2:5,3:4,4:3,5:2};
-// Nota operativa: data agregada de POS Sem 21–25; no incluye merma ni variación.
+// Nota operativa: data POS por semana individual Sem 18–25; no incluye merma ni variación.
 const state={tab:'maxmin',max:[],consulta:[],acomodo:[],markerPosMax:{},markerPosAcomodo:{}};
 const $=id=>document.getElementById(id);
 
@@ -12,12 +12,13 @@ const cfg={
 
 function init(){
   ['maxDate','conDate','acoDate'].forEach(id=>$(id).textContent=new Date().toLocaleDateString('es-MX'));
-  const stores=uniq(MAXMIN_ROWS.map(r=>r[COL.tienda]));
+  buildDataIndex();
+  const stores=(window.MAXMIN_STORES||[]);
   ['maxStore','conStore','acoStore'].forEach(id=>$(id).innerHTML=stores.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join(''));
-  const weeks=(window.MAXMIN_META&&MAXMIN_META.aggregated)?[MAXMIN_META.weeks||'21-25']:uniq(MAXMIN_ROWS.map(r=>r[COL.sem]));
+  const weeks=(window.MAXMIN_META&&Array.isArray(MAXMIN_META.weeks))?MAXMIN_META.weeks:uniq(Object.keys(window.MAXMIN_WEEK_ROWS||{}));
   ['maxWeeks','conWeeks'].forEach(id=>{
-    $(id).innerHTML=weeks.map(w=>`<option value="${esc(w)}">${esc(w)}</option>`).join('');
-    [...$(id).options].forEach(o=>o.selected=true);
+    $(id).innerHTML=weeks.map(w=>`<option value="${esc(w)}" selected>Semana ${esc(w)}</option>`).join('');
+    enhanceWeekSelect(id);
   });
   bind();
   refreshAllFilters();
@@ -174,13 +175,55 @@ if(window.matchMedia){
   if(mq.addEventListener)mq.addEventListener('change',handler); else if(mq.addListener)mq.addListener(handler);
 }
 
+
+function buildDataIndex(){
+  window.MAXMIN_STORE_INDEX=new Map((window.MAXMIN_STORES||[]).map((s,i)=>[s,i]));
+  window.MAXMIN_STORE_WEEK={};
+  const all=window.MAXMIN_WEEK_ROWS||{};
+  for(const wk of Object.keys(all)){
+    for(const r of all[wk]){
+      const si=r[0];
+      if(!window.MAXMIN_STORE_WEEK[si]) window.MAXMIN_STORE_WEEK[si]={};
+      if(!window.MAXMIN_STORE_WEEK[si][wk]) window.MAXMIN_STORE_WEEK[si][wk]=[];
+      window.MAXMIN_STORE_WEEK[si][wk].push(r);
+    }
+  }
+}
+function expandRow(r,wk){
+  return [window.MAXMIN_DMS?.[r[7]]||'',2026,String(wk),'',window.MAXMIN_STORES[r[0]],window.MAXMIN_CATS[r[1]],window.MAXMIN_ARTS[r[2]],r[3],window.MAXMIN_PRES[r[4]]||'PZA:',window.MAXMIN_PRES[r[5]]||window.MAXMIN_PRES[r[4]]||'PZA:',r[6]||1];
+}
+function enhanceWeekSelect(id){
+  const sel=$(id); if(!sel || sel.dataset.enhanced)return; sel.dataset.enhanced='1'; sel.classList.add('native-weeks');
+  const box=document.createElement('div'); box.className='week-chips'; box.id=id+'Chips';
+  sel.insertAdjacentElement('afterend',box);
+  const sync=()=>{
+    const opts=[...sel.options], allSelected=opts.every(o=>o.selected);
+    box.innerHTML='';
+    const all=document.createElement('button'); all.type='button'; all.className='week-chip all '+(allSelected?'active':''); all.textContent='Todas';
+    all.onclick=()=>{opts.forEach(o=>o.selected=true); sel.dispatchEvent(new Event('change',{bubbles:true})); sync();};
+    box.appendChild(all);
+    opts.forEach(o=>{
+      const b=document.createElement('button'); b.type='button'; b.className='week-chip '+(o.selected?'active':''); b.textContent=o.textContent.replace('Semana ','S');
+      b.onclick=()=>{o.selected=!o.selected; if(!opts.some(x=>x.selected)) o.selected=true; sel.dispatchEvent(new Event('change',{bubbles:true})); sync();};
+      box.appendChild(b);
+    });
+  };
+  sel.addEventListener('change',sync); sync();
+}
+function selectedWeekValues(tab){
+  const vals=selectedWeeks(tab);
+  if(vals.length) return vals;
+  const all=(window.MAXMIN_META&&Array.isArray(MAXMIN_META.weeks))?MAXMIN_META.weeks:uniq(Object.keys(window.MAXMIN_WEEK_ROWS||{}));
+  return all.map(String);
+}
+
 function refreshAllFilters(){refreshTab('maxmin'); refreshTab('consulta'); updateSubtitles();}
 function refreshTab(tab){
   if(tab==='acomodo')return;
   const c=cfg[tab];
   if(c.category){
     const cur=$(c.category).value;
-    const cats=uniq(rowsRaw(tab).filter(r=>selectedWeeks(tab).length===0||selectedWeeks(tab).includes(String(r[COL.sem]))).map(r=>r[COL.cat]));
+    const cats=uniq(rowsRaw(tab).map(r=>r[COL.cat]));
     $(c.category).innerHTML='<option value="">Todas</option>'+cats.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
     if(cats.includes(cur))$(c.category).value=cur;
   }
@@ -188,16 +231,28 @@ function refreshTab(tab){
   if(c.datalist)$(c.datalist).innerHTML=list.map(x=>`<option value="${esc(x.art)}"></option>`).join('');
 }
 
-function rowsRaw(tab){return MAXMIN_ROWS.filter(r=>r[COL.tienda]===$(cfg[tab].store).value)}
+function rowsRaw(tab){
+  const store=$(cfg[tab].store).value;
+  const si=window.MAXMIN_STORE_INDEX?.get(store);
+  const weeks=selectedWeekValues(tab);
+  const out=[];
+  if(si===undefined)return out;
+  const byWeek=window.MAXMIN_STORE_WEEK?.[si]||{};
+  for(const wk of weeks){
+    const chunk=byWeek[String(wk)]||[];
+    for(const r of chunk) out.push(expandRow(r,wk));
+  }
+  return out;
+}
 function selectedWeeks(tab){return [...$(cfg[tab].weeks).selectedOptions].map(o=>o.value);}
 function filteredRows(tab){
   const c=cfg[tab], weeks=selectedWeeks(tab);
-  let rows=rowsRaw(tab).filter(r=>weeks.length===0||weeks.includes(String(r[COL.sem])));
+  let rows=rowsRaw(tab);
   if(c.category && $(c.category).value) rows=rows.filter(r=>r[COL.cat]===$(c.category).value);
   return rows;
 }
 function itemAgg(tab){
-  const rows=filteredRows(tab), weeks=selectedWeeks(tab), divisor=(window.MAXMIN_META&&MAXMIN_META.aggregated)?1:(weeks.length || uniq(rowsRaw(tab).map(r=>r[COL.sem])).length || 1);
+  const rows=filteredRows(tab), weeks=selectedWeekValues(tab), divisor=(weeks.length || 1);
   const map=new Map();
   for(const r of rows){
     const art=r[COL.art]; if(!art)continue;
@@ -316,8 +371,8 @@ function drag(el,n,layerId,posKey){
 }
 
 function updateSubtitles(){
-  const maxWeeks=selectedWeeks('maxmin').join(', ')||'Todas';
-  const conWeeks=selectedWeeks('consulta').join(', ')||'Todas';
+  const maxWeeks=selectedWeekValues('maxmin').join(', ')||'Todas';
+  const conWeeks=selectedWeekValues('consulta').join(', ')||'Todas';
   $('maxSubtitle').textContent=`${$('maxStore').value} · Uso Sem ${maxWeeks} · POS`;
   $('conSubtitle').textContent=`${$('conStore').value} · Uso Sem ${conWeeks} · POS`;
   $('acoSubtitle').textContent=`${$('acoStore').value} · ${$('acoTitle').value || 'Acomodo visual'}`;
@@ -340,4 +395,4 @@ function fmtUnit(n){return Number(n||0).toLocaleString('es-MX',{minimumFractionD
 function fmtMinMax(n,mode){return mode==='unidad'?fmtUnit(n):Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:0})}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
 function clean(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').replace(/^_|_$/g,'')}
-window.addEventListener('DOMContentLoaded',()=>{init(); requestAnimationFrame(alignAllMarkerLayers);});
+window.addEventListener('DOMContentLoaded',()=>{init(); console.info('Max&Min 3.0 validado', window.MAXMIN_META?.counts); requestAnimationFrame(alignAllMarkerLayers);});

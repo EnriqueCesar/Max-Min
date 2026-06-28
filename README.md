@@ -1,42 +1,21 @@
-# Máximos y Mínimos 2.0 PWA
+# Max&Min 3.0 POS Sem 18–25
 
-Herramienta operativa Centro Norte lista para GitHub Pages y uso tipo app.
+Versión optimizada para GitHub Pages.
 
-## Subir a GitHub
+## Mejoras
+- Filtro dinámico e intuitivo por semana individual: 18, 19, 20, 21, 22, 23, 24, 25.
+- Promedio calculado acorde a las semanas seleccionadas.
+- Data POS únicamente: no considera merma ni variación.
+- Datos separados por semana para facilitar correcciones y actualización de tendencias.
+- Cada archivo de data queda por debajo de 15 MB.
 
-Sube/reemplaza todo el contenido en la raíz del repositorio `Max-Min`:
+## Validación de carga
+- Tiendas: 944
+- Artículos: 723
+- Categorías: 26
+- Registros POS: 1,457,790
+- Registros por semana: {18: 180730, 19: 181688, 20: 181351, 21: 174566, 22: 197529, 23: 183327, 24: 181970, 25: 176629}
 
-- `index.html`
-- `README.md`
-- `manifest.webmanifest`
-- `sw.js`
-- `css/`
-- `js/`
-- `icons/`
-
-## Activar GitHub Pages
-
-Settings → Pages → Deploy from branch → `main` / `/root`.
-
-URL esperada:
-
-`https://enriquecesar.github.io/Max-Min/`
-
-## Instalar como app
-
-### Android / Chrome
-Abre la URL → menú ⋮ → **Agregar a pantalla principal** o **Instalar app**.
-
-### iPhone / Safari
-Abre la URL → Compartir → **Agregar a pantalla de inicio**.
-
-## Notas
-
-- Funciona como PWA con manifest y service worker.
-- Los archivos de data están divididos para GitHub Web.
-- Después de actualizar, usar Ctrl + Shift + R o abrir en incógnito para evitar caché.
-
-
-## PWA 10/10
-
-Assets conectados en `icons/`, manifest único `manifest.webmanifest`, splash/hero enlazados y `sw.js` con caché offline.
+## Fórmula
+Uso mínimo = Uso promedio semanal seleccionado / 7.  
+Máximo según entregas: 2=×5, 3=×4, 4=×3, 5=×2.

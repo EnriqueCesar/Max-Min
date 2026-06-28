@@ -1,5 +1,6 @@
 const COL={dm:0,anio:1,sem:2,ceco:3,tienda:4,cat:5,art:6,uso:7,unidad:8,pickpack:9,factor:10};
 const factorPedidos={2:5,3:4,4:3,5:2};
+// Nota operativa: data agregada de POS Sem 21–25; no incluye merma ni variación.
 const state={tab:'maxmin',max:[],consulta:[],acomodo:[],markerPosMax:{},markerPosAcomodo:{}};
 const $=id=>document.getElementById(id);
 
@@ -13,10 +14,10 @@ function init(){
   ['maxDate','conDate','acoDate'].forEach(id=>$(id).textContent=new Date().toLocaleDateString('es-MX'));
   const stores=uniq(MAXMIN_ROWS.map(r=>r[COL.tienda]));
   ['maxStore','conStore','acoStore'].forEach(id=>$(id).innerHTML=stores.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join(''));
-  const weeks=uniq(MAXMIN_ROWS.map(r=>Number(r[COL.sem])));
+  const weeks=(window.MAXMIN_META&&MAXMIN_META.aggregated)?[MAXMIN_META.weeks||'21-25']:uniq(MAXMIN_ROWS.map(r=>r[COL.sem]));
   ['maxWeeks','conWeeks'].forEach(id=>{
-    $(id).innerHTML=weeks.map(w=>`<option value="${w}">${w}</option>`).join('');
-    [...$(id).options].slice(-4).forEach(o=>o.selected=true);
+    $(id).innerHTML=weeks.map(w=>`<option value="${esc(w)}">${esc(w)}</option>`).join('');
+    [...$(id).options].forEach(o=>o.selected=true);
   });
   bind();
   refreshAllFilters();
@@ -179,7 +180,7 @@ function refreshTab(tab){
   const c=cfg[tab];
   if(c.category){
     const cur=$(c.category).value;
-    const cats=uniq(rowsRaw(tab).filter(r=>selectedWeeks(tab).length===0||selectedWeeks(tab).includes(Number(r[COL.sem]))).map(r=>r[COL.cat]));
+    const cats=uniq(rowsRaw(tab).filter(r=>selectedWeeks(tab).length===0||selectedWeeks(tab).includes(String(r[COL.sem]))).map(r=>r[COL.cat]));
     $(c.category).innerHTML='<option value="">Todas</option>'+cats.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
     if(cats.includes(cur))$(c.category).value=cur;
   }
@@ -188,15 +189,15 @@ function refreshTab(tab){
 }
 
 function rowsRaw(tab){return MAXMIN_ROWS.filter(r=>r[COL.tienda]===$(cfg[tab].store).value)}
-function selectedWeeks(tab){return [...$(cfg[tab].weeks).selectedOptions].map(o=>Number(o.value));}
+function selectedWeeks(tab){return [...$(cfg[tab].weeks).selectedOptions].map(o=>o.value);}
 function filteredRows(tab){
   const c=cfg[tab], weeks=selectedWeeks(tab);
-  let rows=rowsRaw(tab).filter(r=>weeks.length===0||weeks.includes(Number(r[COL.sem])));
+  let rows=rowsRaw(tab).filter(r=>weeks.length===0||weeks.includes(String(r[COL.sem])));
   if(c.category && $(c.category).value) rows=rows.filter(r=>r[COL.cat]===$(c.category).value);
   return rows;
 }
 function itemAgg(tab){
-  const rows=filteredRows(tab), weeks=selectedWeeks(tab), divisor=weeks.length || uniq(rowsRaw(tab).map(r=>Number(r[COL.sem]))).length || 1;
+  const rows=filteredRows(tab), weeks=selectedWeeks(tab), divisor=(window.MAXMIN_META&&MAXMIN_META.aggregated)?1:(weeks.length || uniq(rowsRaw(tab).map(r=>r[COL.sem])).length || 1);
   const map=new Map();
   for(const r of rows){
     const art=r[COL.art]; if(!art)continue;
@@ -317,8 +318,8 @@ function drag(el,n,layerId,posKey){
 function updateSubtitles(){
   const maxWeeks=selectedWeeks('maxmin').join(', ')||'Todas';
   const conWeeks=selectedWeeks('consulta').join(', ')||'Todas';
-  $('maxSubtitle').textContent=`${$('maxStore').value} · Semanas ${maxWeeks}`;
-  $('conSubtitle').textContent=`${$('conStore').value} · Semanas ${conWeeks}`;
+  $('maxSubtitle').textContent=`${$('maxStore').value} · Uso Sem ${maxWeeks} · POS`;
+  $('conSubtitle').textContent=`${$('conStore').value} · Uso Sem ${conWeeks} · POS`;
   $('acoSubtitle').textContent=`${$('acoStore').value} · ${$('acoTitle').value || 'Acomodo visual'}`;
 }
 function resetCurrent(){
